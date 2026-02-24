@@ -1,9 +1,9 @@
 import 'dotenv/config';
+import express from 'express';
 import cors from 'cors';
 import pino from 'pino-http';
-import express from 'express';
 
-const PORT = process.env.PORT ?? 3000;
+const PORT = process.env.PORT || 3000;
 
 const app = express();
 
@@ -13,34 +13,24 @@ app.use(express.json());
 app.use(
   pino({
     level: 'info',
-    transport: {
-      target: 'pino-pretty',
-      options: {
-        colorize: true,
-        translateTime: 'HH:MM:ss',
-        ignore: 'pid,hostname',
-        messageFormat:
-          '{req.method} {req.url} {res.statusCode} - {responseTime}ms',
-        hideObject: true,
-      },
-    },
   }),
 );
 
 app.get('/notes', (req, res) => {
-  req.log.info('Отримання усіх нотаток');
-  res.status(200).json({ message: 'Retrieved all notes' });
+  res.status(200).json({
+    message: 'Retrieved all notes',
+  });
 });
 
 app.get('/notes/:noteId', (req, res) => {
   const { noteId } = req.params;
-  req.log.info(`Отримання нотатки з ID: ${noteId}`);
+
   res.status(200).json({
     message: `Retrieved note with ID: ${noteId}`,
   });
 });
 
-app.get('/test-error', (req, res) => {
+app.get('/test-error', () => {
   throw new Error('Simulated server error');
 });
 
@@ -51,8 +41,6 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => {
-  console.error(err.message);
-
   res.status(500).json({
     message: err.message,
   });
